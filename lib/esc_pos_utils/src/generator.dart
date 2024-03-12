@@ -51,7 +51,7 @@ class Generator {
 
   // charWidth = default width * text size multiplier
   double _getCharWidth(PosStyles styles) {
-    int charsPerLine = _getCharsPerLine(styles);
+    int charsPerLine = _getMaxCharsPerLine(styles.fontSize);
     double charWidth = _paperSize.width / charsPerLine;
     return charWidth;
   }
@@ -59,11 +59,6 @@ class Generator {
   double _colIndToPosition(int colInd) {
     final int width = _paperSize.width;
     return colInd == 0 ? 0 : (width * colInd / 12 - 1);
-  }
-
-  int _getCharsPerLine(PosStyles styles) {
-    final int charsPerLine = _getMaxCharsPerLine(styles.fontSize);
-    return charsPerLine;
   }
 
   Uint8List _encode(String text, {bool isKanji = false}) {
