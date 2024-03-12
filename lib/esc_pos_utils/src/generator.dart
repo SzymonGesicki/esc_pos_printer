@@ -147,7 +147,7 @@ class Generator {
         break;
       case Size.large:
         if (_styles.fontSize != Size.large) {
-          _setLinesSpacing(bytes);
+          bytes += _linesSpacingCommand();
           bytes += cFontB.codeUnits;
           bytes += Uint8List.fromList(
             List.from(cSizeGSn.codeUnits)..add(PosTextSize.decSize(styles.fontSize)),
@@ -180,9 +180,7 @@ class Generator {
     return bytes;
   }
 
-  void _setLinesSpacing(List<int> bytes) {
-    bytes.addAll([27, 51, 90]);
-  }
+  List<int> _linesSpacingCommand() => [27, 51, 90];
 
   /// Sens raw command(s)
   List<int> rawBytes(List<int> cmd, {bool isKanji = false}) {
