@@ -32,14 +32,11 @@ class _MyHomePageState extends State<MyHomePage> {
   final NetworkPrinter printer = NetworkPrinter(host: "YOUR PRINTER IP ADDRESS");
 
   Future<void> testReceipt() async {
-    const leftMargin = 0;
     final paperSize = PaperSize.custom(500);
 
     final commands = EscPosGenerator.generateCommands(
       [
         InitCommand(
-          leftMargin: leftMargin,
-          dpi: 203,
           globalCodeTable: "CP1255",
           characterSet: PrinterCharacterSet.hebrew,
         ),

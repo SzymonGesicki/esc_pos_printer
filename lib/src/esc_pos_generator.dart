@@ -15,15 +15,20 @@ class EscPosGenerator {
     List<PrinterCommand> printerCommands, {
     PaperSize paperSize = PaperSize.mm80,
     FontSizeConfig fontSizeConfig = PosTextSize.defaultFontSizeConfig,
+    int leftMarginMillimeters = 0,
+    int dpi = 203,
   }) {
     final List<List<int>> commands = [];
-    final generator = Generator(paperSize, CapabilityProfile.load(), fontSizeConfig);
+    // Calculate dots based on dpi (dots per inch)
+    // 1 inch is approximately 25.4 millimeters
+    final leftMarginDots = (leftMarginMillimeters * dpi / 25.4).round();
+
+    final generator =
+        Generator(paperSize, CapabilityProfile.load(), fontSizeConfig, leftMarginDots);
 
     for (var command in printerCommands) {
       switch (command) {
         case InitCommand(
-            leftMargin: final int leftMargin,
-            dpi: final int dpi,
             globalCodeTable: final String globalCodeTable,
             characterSet: final PrinterCharacterSet characterSet,
           ):
@@ -40,16 +45,12 @@ class EscPosGenerator {
           commands.add(generator.setGlobalCodeTable(globalCodeTable));
           // set absolute print position
           commands.add([27, 36, 0, 0]);
-          // Calculate dots based on dpi (dots per inch)
-          // 1 inch is approximately 25.4 millimeters
-          final dots = (leftMargin * dpi / 25.4).round();
-          final nL = dots % 256;
-          final nH = (dots / 256).floor();
-          // set left margin
-          commands.add([29, 76, nL, nH]);
+          // set 0 margin
+          commands.add([29, 76, 0, 0]);
           // set print area width
-          final areaWidthL = paperSize.value % 256;
-          final areaWidthH = paperSize.value ~/ 256;
+          final paperSizeWithMargin = paperSize.value + leftMarginDots;
+          final areaWidthL = paperSizeWithMargin % 256;
+          final areaWidthH = paperSizeWithMargin ~/ 256;
           commands.add([29, 87, areaWidthL, areaWidthH]);
 
         case OpenCashDrawerCommand(pin: final int pin):
