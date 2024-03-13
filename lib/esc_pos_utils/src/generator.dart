@@ -25,12 +25,19 @@ import 'commands.dart';
 import 'not_supported_characters.dart';
 
 class Generator {
-  Generator(this._paperSize, this._profile, this._fontSizeConfig, {this.spaceBetweenRows = 4});
+  Generator(
+    this._paperSize,
+    this._profile,
+    this._fontSizeConfig,
+    this.leftMarginDots, {
+    this.spaceBetweenRows = 4,
+  });
 
   // Ticket config
   final PaperSize _paperSize;
   final CapabilityProfile _profile;
   final FontSizeConfig _fontSizeConfig;
+  final int leftMarginDots;
 
   // Global styles
   String? _codeTable;
@@ -51,14 +58,19 @@ class Generator {
 
   // charWidth = default width * text size multiplier
   double _getCharWidth(PosStyles styles) {
-    int charsPerLine = _getMaxCharsPerLine(styles.fontSize);
+    int charsPerLine = _getCharsPerLine(styles);
     double charWidth = _paperSize.width / charsPerLine;
     return charWidth;
   }
 
   double _colIndToPosition(int colInd) {
     final int width = _paperSize.width;
-    return colInd == 0 ? 0 : (width * colInd / 12 - 1);
+    return (colInd == 0 ? 0 : (width * colInd / 12 - 1)) + leftMarginDots.toDouble();
+  }
+
+  int _getCharsPerLine(PosStyles styles) {
+    final int charsPerLine = _getMaxCharsPerLine(styles.fontSize);
+    return charsPerLine;
   }
 
   Uint8List _encode(String text, {bool isKanji = false}) {

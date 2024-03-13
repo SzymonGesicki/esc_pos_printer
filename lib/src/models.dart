@@ -4,14 +4,10 @@ sealed class PrinterCommand {}
 
 class InitCommand extends PrinterCommand {
   InitCommand({
-    required this.leftMargin,
-    required this.dpi,
     required this.globalCodeTable,
     required this.characterSet,
   });
 
-  final int leftMargin;
-  final int dpi;
   final String globalCodeTable;
   final PrinterCharacterSet characterSet;
 }
