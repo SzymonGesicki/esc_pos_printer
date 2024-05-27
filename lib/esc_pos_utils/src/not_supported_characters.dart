@@ -9,6 +9,12 @@ class NotSupportedCharacter {
 
 List<NotSupportedCharacter> notSupportedCharactersForBidi = [
   NotSupportedCharacter(asci: 8207, replacteTo: ''),
+  NotSupportedCharacter(asci: 8235, replacteTo: ''),
+  NotSupportedCharacter(asci: 8238, replacteTo: ''),
+  NotSupportedCharacter(asci: 8206, replacteTo: ''),
+  NotSupportedCharacter(asci: 8234, replacteTo: ''),
+  NotSupportedCharacter(asci: 8237, replacteTo: ''),
+  NotSupportedCharacter(asci: 8236, replacteTo: ''),
 ];
 
 List<NotSupportedCharacter> notSupportedCharactersForPrint = [
