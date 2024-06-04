@@ -26,17 +26,14 @@ import 'not_supported_characters.dart';
 
 class Generator {
   Generator(
-    this._paperSize,
+    this._printableWidth,
     this._profile,
-    this._fontSizeConfig,
-    this.leftMarginDots, {
-    this.spaceBetweenRows = 4,
-  });
+    this.leftMarginDots,
+  );
 
   // Ticket config
-  final PaperSize _paperSize;
+  final PrintableWidth _printableWidth;
   final CapabilityProfile _profile;
-  final FontSizeConfig _fontSizeConfig;
   final int leftMarginDots;
 
   // Global styles
@@ -44,33 +41,13 @@ class Generator {
 
   // Current styles
   PosStyles _styles = PosStyles();
-  int spaceBetweenRows;
 
   // ************************ Internal helpers ************************
-  int _getMaxCharsPerLine(Size fontSize) {
-    switch (fontSize) {
-      case Size.small:
-        return _fontSizeConfig.maxCharsPerLineSmall;
-      case Size.large:
-        return _fontSizeConfig.maxCharsPerLineLarge;
-    }
-  }
-
-  // charWidth = default width * text size multiplier
-  double _getCharWidth(PosStyles styles) {
-    int charsPerLine = _getCharsPerLine(styles);
-    double charWidth = _paperSize.width / charsPerLine;
-    return charWidth;
-  }
+  int _getMaxCharsPerLine(Size fontSize) => (_printableWidth.value / fontSize.charWidth).floor();
 
   double _colIndToPosition(int colInd) {
-    final int width = _paperSize.width;
+    final int width = _printableWidth.value;
     return (colInd == 0 ? 0 : (width * colInd / 12 - 1)) + leftMarginDots.toDouble();
-  }
-
-  int _getCharsPerLine(PosStyles styles) {
-    final int charsPerLine = _getMaxCharsPerLine(styles.fontSize);
-    return charsPerLine;
   }
 
   Uint8List _encode(String text, {bool isKanji = false}) {
@@ -322,9 +299,9 @@ class Generator {
 
     for (int i = 0; i < cols.length; ++i) {
       int colInd = cols.sublist(0, i).fold(0, (int sum, col) => sum + col.width);
-      double charWidth = _getCharWidth(cols[i].styles);
+      double charWidth = cols[i].styles.fontSize.charWidth.toDouble();
       double fromPos = _colIndToPosition(colInd);
-      final double toPos = _colIndToPosition(colInd + cols[i].width) - spaceBetweenRows;
+      final double toPos = _colIndToPosition(colInd + cols[i].width);
       int maxCharactersNb = ((toPos - fromPos) / charWidth).floor();
 
       Uint8List encodedToPrint =
@@ -479,13 +456,13 @@ class Generator {
   }) {
     List<int> bytes = [];
     if (colInd != null) {
-      double charWidth = _getCharWidth(styles);
+      double charWidth = styles.fontSize.charWidth.toDouble();
       double fromPos = _colIndToPosition(colInd);
 
       // Align
       if (colWidth != 12) {
         // Update fromPos
-        final double toPos = _colIndToPosition(colInd + colWidth) - spaceBetweenRows;
+        final double toPos = _colIndToPosition(colInd + colWidth);
         final double textLen = textBytes.length * charWidth;
 
         if (styles.align == PosAlign.right) {

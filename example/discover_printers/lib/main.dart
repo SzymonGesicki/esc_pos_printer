@@ -32,7 +32,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final NetworkPrinter printer = NetworkPrinter(host: "YOUR PRINTER IP ADDRESS");
 
   Future<void> testReceipt() async {
-    final paperSize = PaperSize.custom(500);
+    const printableWidth = PrintableWidth(504);
 
     final commands = EscPosGenerator.generateCommands(
       [
@@ -44,8 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ..._generateTestPage(Size.large),
         CutCommand(),
       ],
-      paperSize: paperSize,
-      fontSizeConfig: const FontSizeConfig(maxCharsPerLineSmall: 41, maxCharsPerLineLarge: 27),
+      printableWidth: printableWidth,
     );
 
     printer.sendCommands(commands);
@@ -141,9 +140,6 @@ class _MyHomePageState extends State<MyHomePage> {
     final PosPrintResult res = await printer.connect();
 
     if (res == PosPrintResult.success) {
-      // DEMO RECEIPT
-      // await printDemoReceipt();
-      // TEST PRINT
       await testReceipt();
       printer.disconnect();
     }
@@ -174,7 +170,7 @@ class _MyHomePageState extends State<MyHomePage> {
             StreamBuilder(
               stream: printer.state,
               builder: (context, data) {
-                return Text("Printor state: ${data.data}");
+                return Text("Printer state: ${data.data}");
               },
             ),
             const SizedBox(width: 10),

@@ -1,6 +1,5 @@
 import 'package:esc_pos_printer/esc_pos_utils/src/capability_profile.dart';
 import 'package:esc_pos_printer/esc_pos_utils/src/enums.dart';
-import 'package:esc_pos_printer/esc_pos_utils/src/font_config/font_size_config.dart';
 import 'package:esc_pos_printer/esc_pos_utils/src/generator.dart';
 import 'package:esc_pos_printer/esc_pos_utils/src/pos_styles.dart';
 import 'package:esc_pos_printer/src/models.dart';
@@ -13,8 +12,7 @@ import './enums.dart';
 class EscPosGenerator {
   static List<List<int>> generateCommands(
     List<PrinterCommand> printerCommands, {
-    PaperSize paperSize = PaperSize.mm80,
-    FontSizeConfig fontSizeConfig = PosTextSize.defaultFontSizeConfig,
+    PrintableWidth printableWidth = const PrintableWidth(504),
     int leftMarginMillimeters = 0,
     int dpi = 203,
   }) {
@@ -23,8 +21,7 @@ class EscPosGenerator {
     // 1 inch is approximately 25.4 millimeters
     final leftMarginDots = (leftMarginMillimeters * dpi / 25.4).round();
 
-    final generator =
-        Generator(paperSize, CapabilityProfile.load(), fontSizeConfig, leftMarginDots);
+    final generator = Generator(printableWidth, CapabilityProfile.load(), leftMarginDots);
 
     for (var command in printerCommands) {
       switch (command) {
@@ -48,7 +45,7 @@ class EscPosGenerator {
           // set 0 margin
           commands.add([29, 76, 0, 0]);
           // set print area width
-          final paperSizeWithMargin = paperSize.value + leftMarginDots;
+          final paperSizeWithMargin = printableWidth.value + leftMarginDots;
           final areaWidthL = paperSizeWithMargin % 256;
           final areaWidthH = paperSizeWithMargin ~/ 256;
           commands.add([29, 87, areaWidthL, areaWidthH]);

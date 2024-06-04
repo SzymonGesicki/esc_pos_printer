@@ -34,23 +34,13 @@ class PosTextSize {
   static const size7 = PosTextSize._internal(7);
   static const size8 = PosTextSize._internal(8);
 
-  static const defaultFontSizeConfig =
-      FontSizeConfig(maxCharsPerLineSmall: 41, maxCharsPerLineLarge: 27);
-
-  static int decSize(Size fontSize) => 16 * (fontSize.value - 1) + (fontSize.value - 1);
+  static int decSize(Size fontSize) => 16 * (fontSize.sizeMultiplier - 1) + (fontSize.sizeMultiplier - 1);
 }
 
-class PaperSize {
-  factory PaperSize.custom(int value) => PaperSize._internal(value);
-
-  const PaperSize._internal(this.value);
+class PrintableWidth {
+  const PrintableWidth(this.value);
 
   final int value;
-
-  static const mm58 = PaperSize._internal(372);
-  static const mm80 = PaperSize._internal(558);
-
-  int get width => value;
 }
 
 class PosBeepDuration {
