@@ -122,11 +122,12 @@ class Generator {
     switch (styles.fontSize) {
       case Size.small:
         if (_styles.fontSize != Size.small) {
+          bytes += _resetLinesSpacingCommand();
           bytes += cFontA.codeUnits;
           bytes += Uint8List.fromList(
             List.from(cSizeGSn.codeUnits)..add(PosTextSize.decSize(styles.fontSize)),
           );
-          _styles = _styles.copyWith(fontSize: styles.fontSize);
+          _styles = _styles.copyWith(fontSize: Size.small);
         }
         break;
       case Size.large:
@@ -165,6 +166,8 @@ class Generator {
   }
 
   List<int> _linesSpacingCommand() => [27, 51, 90];
+
+  List<int> _resetLinesSpacingCommand() => [27, 50];
 
   /// Sens raw command(s)
   List<int> rawBytes(List<int> cmd, {bool isKanji = false}) {
@@ -223,7 +226,9 @@ class Generator {
   /// [mode] is used to define the full or partial cut (if supported by the priner)
   List<int> cut({PosCutMode mode = PosCutMode.full}) {
     List<int> bytes = [];
-    bytes += emptyLines(5);
+
+    bytes += emptyLines(_styles.fontSize.emptyLinesBeforeCut);
+
     if (mode == PosCutMode.partial) {
       bytes += cCutPart.codeUnits;
     } else {
