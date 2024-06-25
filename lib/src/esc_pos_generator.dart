@@ -29,8 +29,6 @@ class EscPosGenerator {
             globalCodeTable: final String globalCodeTable,
             characterSet: final PrinterCharacterSet characterSet,
           ):
-          // set print position to the beginning of the line
-          commands.add([10]);
           // reset settings
           commands.add([27, 64]);
           // enter standard mode
