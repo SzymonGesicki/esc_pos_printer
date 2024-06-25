@@ -123,6 +123,7 @@ class Generator {
       case Size.small:
         if (_styles.fontSize != Size.small) {
           bytes += _resetLinesSpacingCommand();
+          bytes += _lettersSpacingCommand(Size.small.letterSpacing);
           bytes += cFontA.codeUnits;
           bytes += Uint8List.fromList(
             List.from(cSizeGSn.codeUnits)..add(PosTextSize.decSize(styles.fontSize)),
@@ -133,6 +134,7 @@ class Generator {
       case Size.large:
         if (_styles.fontSize != Size.large) {
           bytes += _linesSpacingCommand();
+          bytes += _lettersSpacingCommand(Size.large.letterSpacing);
           bytes += cFontB.codeUnits;
           bytes += Uint8List.fromList(
             List.from(cSizeGSn.codeUnits)..add(PosTextSize.decSize(styles.fontSize)),
@@ -168,6 +170,8 @@ class Generator {
   List<int> _linesSpacingCommand() => [27, 51, 90];
 
   List<int> _resetLinesSpacingCommand() => [27, 50];
+
+  List<int> _lettersSpacingCommand(int spacing) => [27, 32, spacing];
 
   /// Sens raw command(s)
   List<int> rawBytes(List<int> cmd, {bool isKanji = false}) {
