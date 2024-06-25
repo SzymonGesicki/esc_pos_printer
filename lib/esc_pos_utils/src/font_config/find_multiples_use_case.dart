@@ -1,5 +1,5 @@
 class FindMultiplesUseCase {
-  static int _gcd(int a, int b) {
+  static int _greatestCommonDivisor(int a, int b) {
     while (b != 0) {
       final int temp = b;
       b = a % b;
@@ -8,12 +8,12 @@ class FindMultiplesUseCase {
     return a;
   }
 
-  static int _lcm(int a, int b) {
-    return (a * b) ~/ _gcd(a, b);
+  static int _leastCommonMultiple(int a, int b) {
+    return (a * b) ~/ _greatestCommonDivisor(a, b);
   }
 
   static List<int> findMultiples(int num1, int num2, int minRange, int maxRange) {
-    final int multiple = _lcm(num1, num2);
+    final int multiple = _leastCommonMultiple(num1, num2);
     final List<int> multiples = [];
 
     for (int i = minRange; i <= maxRange; i++) {

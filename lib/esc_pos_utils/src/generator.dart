@@ -122,7 +122,7 @@ class Generator {
     switch (styles.fontSize) {
       case Size.small:
         if (_styles.fontSize != Size.small) {
-          bytes += _resetLinesSpacingCommand();
+          bytes += _linesSpacingCommand(Size.small.lineSpacing);
           bytes += _lettersSpacingCommand(Size.small.letterSpacing);
           bytes += cFontA.codeUnits;
           bytes += Uint8List.fromList(
@@ -133,7 +133,7 @@ class Generator {
         break;
       case Size.large:
         if (_styles.fontSize != Size.large) {
-          bytes += _linesSpacingCommand();
+          bytes += _linesSpacingCommand(Size.large.lineSpacing);
           bytes += _lettersSpacingCommand(Size.large.letterSpacing);
           bytes += cFontB.codeUnits;
           bytes += Uint8List.fromList(
@@ -167,9 +167,7 @@ class Generator {
     return bytes;
   }
 
-  List<int> _linesSpacingCommand() => [27, 51, 90];
-
-  List<int> _resetLinesSpacingCommand() => [27, 50];
+  List<int> _linesSpacingCommand(int spacing) => [27, 51, spacing];
 
   List<int> _lettersSpacingCommand(int spacing) => [27, 32, spacing];
 

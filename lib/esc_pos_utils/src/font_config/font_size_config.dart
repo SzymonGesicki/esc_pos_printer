@@ -1,4 +1,4 @@
-import 'package:esc_pos_printer/esc_pos_utils/src/font_config/find_multuples_use_case.dart';
+import 'package:esc_pos_printer/esc_pos_utils/src/font_config/find_multiples_use_case.dart';
 
 enum Size {
   //charWidth = default font width * text size multiplier
@@ -7,12 +7,14 @@ enum Size {
     fontWidth: 12,
     emptyLinesBeforeCut: 4,
     letterSpacing: 0,
+    lineSpacing: 10,
   ), // Font A width: 12
   large(
     sizeMultiplier: 2,
     fontWidth: 9,
     emptyLinesBeforeCut: 3,
     letterSpacing: 3,
+    lineSpacing: 90,
   ); // Font B width: 9
 
   const Size({
@@ -20,11 +22,13 @@ enum Size {
     required this.fontWidth,
     required this.emptyLinesBeforeCut,
     required this.letterSpacing,
+    required this.lineSpacing,
   });
 
   final int sizeMultiplier;
   final int emptyLinesBeforeCut;
   final int letterSpacing;
+  final int lineSpacing;
   final int fontWidth;
 
   int get charWidth => (fontWidth + letterSpacing) * sizeMultiplier;
