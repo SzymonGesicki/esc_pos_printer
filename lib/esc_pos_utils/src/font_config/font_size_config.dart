@@ -7,7 +7,7 @@ enum Size {
     fontWidth: 12,
     emptyLinesBeforeCut: 4,
     letterSpacing: 0,
-    lineSpacing: 10,
+    lineSpacing: 60,
   ), // Font A width: 12
   large(
     sizeMultiplier: 2,
