@@ -57,3 +57,15 @@ class PosBeepDuration {
   static const beep400ms = PosBeepDuration._internal(8);
   static const beep450ms = PosBeepDuration._internal(9);
 }
+
+enum BuzzerDuration {
+  one(1),
+  three(3),
+  five(5),
+  ten(10),
+  twenty(20);
+
+  const BuzzerDuration(this.value);
+
+  final int value;
+}

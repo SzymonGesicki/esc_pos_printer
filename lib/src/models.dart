@@ -139,3 +139,13 @@ class TextCommand extends PrinterCommand {
   final bool containsChinese;
   final int? maxCharsPerLine;
 }
+
+class BuzzerCommand extends PrinterCommand {
+  BuzzerCommand({
+    required this.volume,
+    required this.duration,
+  });
+
+  final int volume;
+  final BuzzerDuration duration;
+}

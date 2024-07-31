@@ -449,9 +449,29 @@ class Generator {
     return bytes;
   }
 
+  List<int> buzzerCommand({
+    required int volume,
+    required BuzzerDuration duration,
+  }) {
+    return [
+      ..._setBuzzerVolume(volume),
+      ..._setBuzzerDuration(duration.value),
+      ..._setBuzzerDuration(0),
+    ];
+  }
+
   // ************************ (end) Public command generators ************************
 
   // ************************ (end) Internal command generators ************************
+
+  List<int> _setBuzzerVolume(int volume) {
+    return [29, 153, 66, 69, 146, 154, 86, 1, volume.clamp(0, 255)];
+  }
+
+  List<int> _setBuzzerDuration(int duration) {
+    return [27, 8, duration];
+  }
+
   /// Generic print for internal use
   ///
   /// [colInd] range: 0..11. If null: do not define the position
