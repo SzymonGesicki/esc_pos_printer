@@ -90,6 +90,9 @@ class EscPosGenerator {
           ):
           commands.add(generator.beep(n: n, duration: duration));
 
+        case BuzzerCommand(volume: final int volume, duration: final BuzzerDuration duration):
+          commands.add(generator.buzzerCommand(volume: volume, duration: duration));
+
         case CutCommand(mode: final PosCutMode mode):
           commands.add(generator.cut(mode: mode));
 
