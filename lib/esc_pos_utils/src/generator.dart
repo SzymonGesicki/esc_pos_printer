@@ -92,13 +92,14 @@ class Generator {
 
   List<int> setStyles(PosStyles styles, {bool isKanji = false}) {
     List<int> bytes = [];
-    if (styles.align != _styles.align) {
-      bytes += Latin8Codec().encode(styles.align == PosAlign.left
-          ? cAlignLeft
-          : (styles.align == PosAlign.center ? cAlignCenter : cAlignRight));
 
-      _styles = _styles.copyWith(align: styles.align);
-    }
+    // unlike other styles, align is set every time because the printer
+    // does not remember the previous settings after printing a row
+    bytes += Latin8Codec().encode(styles.align == PosAlign.left
+        ? cAlignLeft
+        : (styles.align == PosAlign.center ? cAlignCenter : cAlignRight));
+
+    _styles = _styles.copyWith(align: styles.align);
 
     if (styles.bold != _styles.bold) {
       bytes += styles.bold ? cBoldOn.codeUnits : cBoldOff.codeUnits;
