@@ -51,9 +51,10 @@ class NetworkPrinter {
     }
   }
 
-  bool sendCommands(List<List<int>> commands) {
+  Future<bool> sendCommands(List<List<int>> commands) async {
     if (_socket != null) {
       commands.forEach(_socket!.add);
+      await _socket?.flush();
       return true;
     } else {
       return false;
