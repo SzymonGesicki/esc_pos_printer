@@ -20,6 +20,7 @@ import 'package:esc_pos_printer/esc_pos_utils/src/pos_column.dart';
 import 'package:esc_pos_printer/esc_pos_utils/src/pos_styles.dart';
 import 'package:esc_pos_printer/esc_pos_utils/src/qrcode.dart';
 import 'package:hex/hex.dart';
+import 'package:intl/intl.dart';
 
 import 'commands.dart';
 import 'not_supported_characters.dart';
@@ -40,7 +41,7 @@ class Generator {
   String? _codeTable;
 
   // Current styles
-  PosStyles _styles = PosStyles();
+  PosStyles _styles = const PosStyles();
 
   // ************************ Internal helpers ************************
   int _getMaxCharsPerLine(Size fontSize) => (_printableWidth.value / fontSize.charWidth).floor();
@@ -50,18 +51,18 @@ class Generator {
     return (colInd == 0 ? 0 : (width * colInd / 12 - 1)) + leftMarginDots.toDouble();
   }
 
-  Uint8List _encode(String text, {bool isKanji = false}) {
+  Uint8List _encode(String text) {
     var textToEncode = text;
     notSupportedCharactersForBidi.forEach((element) {
-      textToEncode = textToEncode.replaceAll(String.fromCharCode(element.asci), element.replacteTo);
+      textToEncode = textToEncode.replaceAll(String.fromCharCode(element.asci), element.replaceTo);
     });
     final visual = bidi.logicalToVisual(textToEncode);
     var decoded = String.fromCharCodes(visual);
     notSupportedCharactersForPrint.forEach((element) {
-      decoded = decoded.replaceAll(String.fromCharCode(element.asci), element.replacteTo);
+      decoded = decoded.replaceAll(String.fromCharCode(element.asci), element.replaceTo);
     });
 
-    return Uint8List.fromList(Latin8Codec(allowInvalid: true).encode(decoded));
+    return Uint8List.fromList(const Latin8Codec(allowInvalid: true).encode(decoded));
   }
 
   // ************************ (end) Internal helpers  ************************
@@ -71,7 +72,7 @@ class Generator {
   List<int> reset() {
     List<int> bytes = [];
     bytes += cInit.codeUnits;
-    _styles = PosStyles();
+    _styles = const PosStyles();
     bytes += setGlobalCodeTable(_codeTable);
     return bytes;
   }
@@ -90,12 +91,12 @@ class Generator {
     return bytes;
   }
 
-  List<int> setStyles(PosStyles styles, {bool isKanji = false}) {
+  List<int> setStyles(PosStyles styles) {
     List<int> bytes = [];
 
     // unlike other styles, align is set every time because the printer
     // does not remember the previous settings after printing a row
-    bytes += Latin8Codec().encode(styles.align == PosAlign.left
+    bytes += const Latin8Codec().encode(styles.align == PosAlign.left
         ? cAlignLeft
         : (styles.align == PosAlign.center ? cAlignCenter : cAlignRight));
 
@@ -131,7 +132,6 @@ class Generator {
           );
           _styles = _styles.copyWith(fontSize: Size.small);
         }
-        break;
       case Size.large:
         if (_styles.fontSize != Size.large) {
           bytes += _linesSpacingCommand(Size.large.lineSpacing);
@@ -142,14 +142,6 @@ class Generator {
           );
           _styles = _styles.copyWith(fontSize: Size.large);
         }
-        break;
-    }
-
-    // Set Kanji mode
-    if (isKanji) {
-      bytes += cKanjiOn.codeUnits;
-    } else {
-      bytes += cKanjiOff.codeUnits;
     }
 
     // Set local code table
@@ -182,17 +174,17 @@ class Generator {
     return bytes;
   }
 
-  List<int> text(
-    String text, {
+  List<int> text({
+    required String text,
     PosStyles styles = const PosStyles(),
     int linesAfter = 0,
-    bool containsChinese = false,
   }) {
     List<int> bytes = [];
-    bytes += _text(
-      _encode(text, isKanji: containsChinese),
+
+    bytes += _simpleText(
+      textBytes: _encode(text),
       styles: styles,
-      isKanji: containsChinese,
+      isRtl: Bidi.detectRtlDirectionality(text),
     );
     // Ensure at least one line break after the text
     bytes += emptyLines(linesAfter + 1);
@@ -296,45 +288,51 @@ class Generator {
   ///
   /// A row contains up to 12 columns. A column has a width between 1 and 12.
   /// Total width of columns in one row must be equal 12.
-  List<int> row(List<PosColumn> cols) {
+  List<int> row(List<PosColumn> posColumns) {
     List<int> bytes = [];
-    final isSumValid = cols.fold(0, (int sum, col) => sum + col.width) == 12;
+    final isSumValid = posColumns.fold(0, (int sum, col) => sum + col.width) == 12;
     if (!isSumValid) {
       throw Exception('Total columns width must be equal to 12');
     }
     bool isNextRow = false;
     List<PosColumn> nextRow = <PosColumn>[];
 
-    for (int i = 0; i < cols.length; ++i) {
-      int colInd = cols.sublist(0, i).fold(0, (int sum, col) => sum + col.width);
-      double charWidth = cols[i].styles.fontSize.charWidth.toDouble();
+    for (int i = 0; i < posColumns.length; ++i) {
+      final posColumn = posColumns[i];
+      int colInd = posColumns.sublist(0, i).fold(0, (int sum, column) => sum + column.width);
+      double charWidth = posColumn.styles.fontSize.charWidth.toDouble();
       double fromPos = _colIndToPosition(colInd);
-      final double toPos = _colIndToPosition(colInd + cols[i].width);
+      final double toPos = _colIndToPosition(colInd + posColumn.width);
       int maxCharactersNb = ((toPos - fromPos) / charWidth).floor();
 
-      Uint8List encodedToPrint =
-          cols[i].textEncoded != null ? cols[i].textEncoded! : _encode(cols[i].text);
+      Uint8List encodedData = switch (posColumn) {
+        TextPosColumn value => _encode(value.text),
+        TextEncodedPosColumn value => value.textEncoded,
+      };
 
-      // If the col's content is too long, split it to the next row
-      int realCharactersNb = encodedToPrint.length;
+      final splitData = _splitEncodedText(encodedData, maxCharactersNb, posColumn.isRtl);
 
-      if (realCharactersNb > maxCharactersNb) {
-        // Print max possible and split to the next row
-        Uint8List encodedToPrintNextRow = encodedToPrint.sublist(maxCharactersNb);
-        encodedToPrint = encodedToPrint.sublist(0, maxCharactersNb);
+      if (splitData.encodedToPrintNextLine != null) {
         isNextRow = true;
-        nextRow.add(PosColumn(
-            textEncoded: encodedToPrintNextRow, width: cols[i].width, styles: cols[i].styles));
+        nextRow.add(
+          TextEncodedPosColumn(
+            textEncoded: splitData.encodedToPrintNextLine!,
+            width: posColumn.width,
+            styles: posColumn.styles,
+            textIsRtl: posColumn.isRtl,
+          ),
+        );
       } else {
         // Insert an empty col
-        nextRow.add(PosColumn(text: '', width: cols[i].width, styles: cols[i].styles));
+        nextRow.add(TextPosColumn(text: '', width: posColumn.width, styles: posColumn.styles));
       }
+
       // end rows splitting
-      bytes += _text(
-        encodedToPrint,
-        styles: cols[i].styles,
+      bytes += _rowText(
+        textBytes: splitData.encodedToPrint,
+        styles: posColumn.styles,
         colInd: colInd,
-        colWidth: cols[i].width,
+        colWidth: posColumn.width,
       );
     }
 
@@ -361,7 +359,7 @@ class Generator {
   }) {
     List<int> bytes = [];
     // Set alignment
-    bytes += setStyles(PosStyles().copyWith(align: align));
+    bytes += setStyles(const PosStyles().copyWith(align: align));
 
     // Set text position
     bytes += cBarcodeSelectPos.codeUnits + [textPos.value];
@@ -401,7 +399,7 @@ class Generator {
   }) {
     List<int> bytes = [];
     // Set alignment
-    bytes += setStyles(PosStyles().copyWith(align: align));
+    bytes += setStyles(const PosStyles().copyWith(align: align));
     QRCode qr = QRCode(text, size, cor);
     bytes += qr.bytes;
     return bytes;
@@ -418,20 +416,7 @@ class Generator {
     List<int> bytes = [];
     int n = len ?? _getMaxCharsPerLine(styles.fontSize);
     String ch1 = ch.length == 1 ? ch : ch[0];
-    bytes += text(List.filled(n, ch1).join(), linesAfter: linesAfter, styles: styles);
-    return bytes;
-  }
-
-  List<int> textEncoded(
-    Uint8List textBytes, {
-    PosStyles styles = const PosStyles(),
-    int linesAfter = 0,
-    int? maxCharsPerLine,
-  }) {
-    List<int> bytes = [];
-    bytes += _text(textBytes, styles: styles);
-    // Ensure at least one line break after the text
-    bytes += emptyLines(linesAfter + 1);
+    bytes += text(text: List.filled(n, ch1).join(), linesAfter: linesAfter, styles: styles);
     return bytes;
   }
 
@@ -475,47 +460,89 @@ class Generator {
   /// Generic print for internal use
   ///
   /// [colInd] range: 0..11. If null: do not define the position
-  List<int> _text(
-    Uint8List textBytes, {
-    PosStyles styles = const PosStyles(),
-    int? colInd = 0,
-    bool isKanji = false,
-    int colWidth = 12,
+  List<int> _rowText({
+    required Uint8List textBytes,
+    required PosStyles styles,
+    required int colInd,
+    required int colWidth,
   }) {
     List<int> bytes = [];
-    if (colInd != null) {
-      double charWidth = styles.fontSize.charWidth.toDouble();
-      double fromPos = _colIndToPosition(colInd);
+    double charWidth = styles.fontSize.charWidth.toDouble();
+    double fromPos = _colIndToPosition(colInd);
 
-      // Align
-      if (colWidth != 12) {
-        // Update fromPos
-        final double toPos = _colIndToPosition(colInd + colWidth);
-        final double textLen = textBytes.length * charWidth;
+    // Align
+    if (colWidth != 12) {
+      // Update fromPos
+      final double toPos = _colIndToPosition(colInd + colWidth);
+      final double textLen = textBytes.length * charWidth;
 
-        if (styles.align == PosAlign.right) {
-          fromPos = toPos - textLen;
-        } else if (styles.align == PosAlign.center) {
-          fromPos = fromPos + (toPos - fromPos) / 2 - textLen / 2;
-        }
-        if (fromPos < 0) {
-          fromPos = 0;
-        }
+      if (styles.align == PosAlign.right) {
+        fromPos = toPos - textLen;
+      } else if (styles.align == PosAlign.center) {
+        fromPos = fromPos + (toPos - fromPos) / 2 - textLen / 2;
       }
-
-      final hexStr = fromPos.round().toRadixString(16).padLeft(3, '0');
-      final hexPair = HEX.decode(hexStr);
-
-      // Position
-      bytes += Uint8List.fromList(
-        List.from(cPos.codeUnits)..addAll([hexPair[1], hexPair[0]]),
-      );
+      if (fromPos < 0) {
+        fromPos = 0;
+      }
     }
 
-    bytes += setStyles(styles, isKanji: isKanji);
+    bytes += _textPositionCommand(fromPos);
+    bytes += setStyles(styles);
 
     bytes += textBytes;
     return bytes;
+  }
+
+  List<int> _simpleText({
+    required Uint8List textBytes,
+    required PosStyles styles,
+    required bool isRtl,
+  }) {
+    List<int> bytes = [];
+    final data = _splitEncodedText(textBytes, _getMaxCharsPerLine(styles.fontSize), isRtl);
+
+    bytes += _textPositionCommand(_colIndToPosition(0));
+    bytes += setStyles(styles);
+    bytes += data.encodedToPrint;
+
+    if (data.encodedToPrintNextLine != null) {
+      bytes += emptyLines(1);
+      bytes += _simpleText(textBytes: data.encodedToPrintNextLine!, styles: styles, isRtl: isRtl);
+    }
+
+    return bytes;
+  }
+
+  List<int> _textPositionCommand(double fromPos) {
+    final hexStr = fromPos.round().toRadixString(16).padLeft(3, '0');
+    final hexPair = HEX.decode(hexStr);
+
+    // Position
+    return Uint8List.fromList(
+      List.from(cPos.codeUnits)..addAll([hexPair[1], hexPair[0]]),
+    );
+  }
+
+  ({Uint8List encodedToPrint, Uint8List? encodedToPrintNextLine}) _splitEncodedText(
+      Uint8List encodedText, int maxCharacters, bool isRtl) {
+    if (encodedText.length > maxCharacters) {
+      if (isRtl) {
+        return (
+          encodedToPrint: encodedText.sublist(encodedText.length - maxCharacters),
+          encodedToPrintNextLine: encodedText.sublist(0, encodedText.length - maxCharacters),
+        );
+      } else {
+        return (
+          encodedToPrint: encodedText.sublist(0, maxCharacters),
+          encodedToPrintNextLine: encodedText.sublist(maxCharacters),
+        );
+      }
+    } else {
+      return (
+        encodedToPrint: encodedText,
+        encodedToPrintNextLine: null,
+      );
+    }
   }
 
 // ************************ (end) Internal command generators ************************

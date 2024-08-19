@@ -1,20 +1,20 @@
 class NotSupportedCharacter {
   NotSupportedCharacter({
     required this.asci,
-    this.replacteTo = '@',
+    this.replaceTo = '@',
   });
   final int asci;
-  final String replacteTo;
+  final String replaceTo;
 }
 
 List<NotSupportedCharacter> notSupportedCharactersForBidi = [
-  NotSupportedCharacter(asci: 8207, replacteTo: ''),
-  NotSupportedCharacter(asci: 8235, replacteTo: ''),
-  NotSupportedCharacter(asci: 8238, replacteTo: ''),
-  NotSupportedCharacter(asci: 8206, replacteTo: ''),
-  NotSupportedCharacter(asci: 8234, replacteTo: ''),
-  NotSupportedCharacter(asci: 8237, replacteTo: ''),
-  NotSupportedCharacter(asci: 8236, replacteTo: ''),
+  NotSupportedCharacter(asci: 8207, replaceTo: ''),
+  NotSupportedCharacter(asci: 8235, replaceTo: ''),
+  NotSupportedCharacter(asci: 8238, replaceTo: ''),
+  NotSupportedCharacter(asci: 8206, replaceTo: ''),
+  NotSupportedCharacter(asci: 8234, replaceTo: ''),
+  NotSupportedCharacter(asci: 8237, replaceTo: ''),
+  NotSupportedCharacter(asci: 8236, replaceTo: ''),
 ];
 
 List<NotSupportedCharacter> notSupportedCharactersForPrint = [
@@ -64,6 +64,6 @@ List<NotSupportedCharacter> notSupportedCharactersForPrint = [
   NotSupportedCharacter(asci: 1522),
   NotSupportedCharacter(asci: 1523),
   NotSupportedCharacter(asci: 1524),
-  NotSupportedCharacter(asci: 8207, replacteTo: ''),
-  NotSupportedCharacter(asci: 160, replacteTo: ''),
+  NotSupportedCharacter(asci: 8207, replaceTo: ''),
+  NotSupportedCharacter(asci: 160, replaceTo: ''),
 ];

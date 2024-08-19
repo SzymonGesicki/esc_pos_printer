@@ -112,13 +112,11 @@ class EscPosGenerator {
             text: final String text,
             styles: final PosStyles styles,
             linesAfter: final int linesAfter,
-            containsChinese: final bool containsChinese,
           ):
           commands.add(generator.text(
-            text,
+            text: text,
             styles: styles,
             linesAfter: linesAfter,
-            containsChinese: containsChinese,
           ));
       }
     }
