@@ -129,14 +129,12 @@ class TextCommand extends PrinterCommand {
     required this.text,
     this.styles = const PosStyles(),
     this.linesAfter = 0,
-    this.containsChinese = false,
     this.maxCharsPerLine,
   });
 
   final String text;
   final PosStyles styles;
   final int linesAfter;
-  final bool containsChinese;
   final int? maxCharsPerLine;
 }
 

@@ -61,14 +61,14 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       RowCommand(
         cols: [
-          PosColumn(
+          TextPosColumn(
               text: "test-1-left",
               styles: PosStyles(
                 align: PosAlign.left,
                 fontSize: fontSize,
               ),
               width: 6),
-          PosColumn(
+          TextPosColumn(
               text: "test-2-right ",
               styles: PosStyles(
                 align: PosAlign.right,
@@ -79,14 +79,14 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       RowCommand(
         cols: [
-          PosColumn(
+          TextPosColumn(
               text: "test-1-left",
               styles: PosStyles(
                 align: PosAlign.left,
                 fontSize: fontSize,
               ),
               width: 6),
-          PosColumn(
+          TextPosColumn(
               text: "test-2-left ",
               styles: PosStyles(
                 align: PosAlign.left,
@@ -97,14 +97,14 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       RowCommand(
         cols: [
-          PosColumn(
+          TextPosColumn(
               text: "test-1-right",
               styles: PosStyles(
                 align: PosAlign.right,
                 fontSize: fontSize,
               ),
               width: 6),
-          PosColumn(
+          TextPosColumn(
               text: "test-2-right ",
               styles: PosStyles(
                 align: PosAlign.right,

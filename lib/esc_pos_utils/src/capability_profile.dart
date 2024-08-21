@@ -20,7 +20,7 @@ class CapabilityProfile {
   CapabilityProfile._internal(this.name, this.codePages);
 
   static CapabilityProfile load({String name = 'default'}) {
-    Map<String, dynamic> capabilities = capabilitiesJosn;
+    Map<String, dynamic> capabilities = capabilitiesJson;
 
     dynamic profile = capabilities['profiles'][name];
 

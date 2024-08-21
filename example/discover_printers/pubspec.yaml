@@ -14,7 +14,6 @@ dependencies:
   esc_pos_printer:
     path: ../../
   image: ^4.0.17
-  intl: ^0.18.1
   path_provider: ^2.1.1
 
 dev_dependencies:
