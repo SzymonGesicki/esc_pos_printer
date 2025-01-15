@@ -525,18 +525,29 @@ class Generator {
 
   ({Uint8List encodedToPrint, Uint8List? encodedToPrintNextLine}) _splitEncodedText(
       Uint8List encodedText, int maxCharacters, bool isRtl) {
-    if (encodedText.length > maxCharacters) {
+    String text = String.fromCharCodes(encodedText);
+
+    if (text.length > maxCharacters) {
       if (isRtl) {
-        return (
-          encodedToPrint: encodedText.sublist(encodedText.length - maxCharacters),
-          encodedToPrintNextLine: encodedText.sublist(0, encodedText.length - maxCharacters),
-        );
-      } else {
-        return (
-          encodedToPrint: encodedText.sublist(0, maxCharacters),
-          encodedToPrintNextLine: encodedText.sublist(maxCharacters),
-        );
+        text = String.fromCharCodes(encodedText.reversed);
       }
+
+      int breakIndex = text.substring(0, maxCharacters).lastIndexOf(' ');
+
+      if (breakIndex == -1) breakIndex = maxCharacters;
+
+      String line1 = text.substring(0, breakIndex).trim();
+      String line2 = text.substring(breakIndex).trim();
+
+      if (isRtl) {
+        line1 = String.fromCharCodes(line1.runes.toList().reversed);
+        line2 = String.fromCharCodes(line2.runes.toList().reversed);
+      }
+
+      return (
+        encodedToPrint: Uint8List.fromList(line1.codeUnits),
+        encodedToPrintNextLine: Uint8List.fromList(line2.codeUnits),
+      );
     } else {
       return (
         encodedToPrint: encodedText,
